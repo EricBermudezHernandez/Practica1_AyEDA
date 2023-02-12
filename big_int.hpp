@@ -46,9 +46,49 @@ class BigInt {
   // Operadores aritméticos
   template <size_t Bass>
   friend BigInt<Bass> operator+(const BigInt<Bass>&, const BigInt<Bass>&);
-  BigInt<Base> operator-(const BigInt<Base>&) const;
+  // ==========================================================
+  // Esta implementación asume que el resultado de la resta siempre es positivo
+  BigInt<Base> operator-(const BigInt<Base>& numero2) const {
+    int carry = 0;
+    BigInt<Base> aux_numero1{*this}, aux_numero2{numero2}, result;
+
+    // Rellenando el número más corto con 0s
+    int lengthDiff = aux_numero1.numero_.size() - aux_numero2.numero_.size();
+    if (lengthDiff < 0) {  // numero2 es el menor de los dos
+      for (int i = 0; i < -lengthDiff; i++) {
+        aux_numero1.numero_.push_back(0);
+      }
+    } else if (lengthDiff > 0) {  // numero1 es el menor de los dos
+      for (int i = 0; i < lengthDiff; i++) {
+        aux_numero2.numero_.push_back(0);
+      }
+    }
+
+    // Restando los números
+    for (int i = 0; i < aux_numero1.numero_.size(); i++) {
+      int difference = aux_numero1.numero_[i] - aux_numero2.numero_[i] - carry;
+      if (difference < 0) {
+        carry = 1;
+        difference += Base;
+      } else {
+        carry = 0;
+      }
+      result.numero_.push_back(difference);
+    }
+
+    // Al final de cada operación se añade un 0 adicional al resultado de la multiplicación,
+    // por lo que se elimina antes de devolver el resultado invirtiendo el número,
+    // quitando el 0 y volviendo a invertir el número
+    std::reverse(result.numero_.begin(), result.numero_.end());
+    result.numero_.pop_back();
+    std::reverse(result.numero_.begin(), result.numero_.end());
+
+    return result;
+  }
+
+  // ==========================================================
   BigInt<Base> operator-() const;
-  /////////////
+  // ==========================================================
   BigInt<Base> operator*(const BigInt<Base>& numero2) const {
     BigInt<Base> aux{*this},result{"0"};
     for (int i = 0; i < aux.numero_.size(); i++) {
@@ -66,7 +106,7 @@ class BigInt {
       }
       result = result + aux_result;
     }
-    // Al final de cada operación se añade un 0 adicional al resultado de la suma,
+    // Al final de cada operación se añade un 0 adicional al resultado de la multiplicación,
     // por lo que se elimina antes de devolver el resultado invirtiendo el número,
     // quitando el 0 y volviendo a invertir el número
     std::reverse(result.numero_.begin(), result.numero_.end());
@@ -74,7 +114,7 @@ class BigInt {
     std::reverse(result.numero_.begin(), result.numero_.end());
     return result;
   }
-  ////////
+  // ==========================================================
   template <size_t Bass>
   friend BigInt<Bass> operator/(const BigInt<Bass>&, const BigInt<Bass>&);
   BigInt<Base> operator%(const BigInt<Base>&) const;
@@ -381,9 +421,45 @@ BigInt<Base> operator+(const BigInt<Base>& numero1,
   return result;
 }
 
+// Esta implementación asume que el resultado de la resta siempre es no negativo
+/*
 template <size_t Base>
-BigInt<Base> operator-(const BigInt<Base>&) {}
+BigInt<Base> operator-(const BigInt<Base>& numero2) {
+  int carry = 0;
+  BigInt<Base> aux_numero1{*this}, aux_numero2{numero2}, result;
 
+  // Rellenando el número más corto con 0s
+  int lengthDiff = aux_numero1.numero_.size() - aux_numero2.numero_.size();
+  if (lengthDiff < 0) {  // numero2 es el menor de los dos
+    for (int i = 0; i < -lengthDiff; i++) {
+      aux_numero1.numero_.push_back(0);
+    }
+  } else if (lengthDiff > 0) {  // numero1 es el menor de los dos
+    for (int i = 0; i < lengthDiff; i++) {
+      aux_numero2.numero_.push_back(0);
+    }
+  }
+
+  // Restando los números
+  for (int i = 0; i < aux_numero1.numero_.size(); i++) {
+    int difference = aux_numero1.numero_[i] - aux_numero2.numero_[i] - carry;
+    if (difference < 0) {
+      carry = 1;
+      difference += Base;
+    } else {
+      carry = 0;
+    }
+    result.numero_.push_back(difference);
+  }
+
+  // Eliminando dígitos no significativos
+  while (result.numero_.size() > 1 && result.numero_.back() == 0) {
+    result.numero_.pop_back();
+  }
+
+  return result;
+}
+*/
 /*
 // Operador negación -> cambia de signo al número
 template <size_t Base>
@@ -392,8 +468,10 @@ BigInt<Base> operator-() {
 }
 */
 
-template <size_t Base>
-BigInt<Base> operator/(const BigInt<Base>&, const BigInt<Base>&) {}
+// MAL
+template <size_t Base> BigInt<Base> operator/(const BigInt<Base>& numero1, const BigInt<Base>& numero2) {
+  
+}
 
 /*
 template <size_t Base>
@@ -428,9 +506,18 @@ BigInt<Base> BigInt<Base>::operator++(int) {  // Post-incremento
 }
 
 template <size_t Base>
-BigInt<Base>& BigInt<Base>::operator--() {}  // Pre-decremento
+BigInt<Base>& BigInt<Base>::operator--() {  // Pre-decremento
+  // Como no se puede restar un BigInt con una constante, Inicializamos un BigInt con valor 1 para poder restar aprovechando la sobrecarga del operador
+  BigInt<Base> restando{1};
+  *this = *this - restando;
+  return *this;
+}  
 
 template <size_t Base>
-BigInt<Base> BigInt<Base>::operator--(int) {}  // Post-decremento
+BigInt<Base> BigInt<Base>::operator--(int) {  // Post-decremento
+  BigInt<Base> aux{*this},restando{1};
+  *this = *this - restando;
+  return aux;
+}  
 
 #endif
