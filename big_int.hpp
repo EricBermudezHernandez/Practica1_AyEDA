@@ -7,11 +7,6 @@
 #include <string>
 #include <vector>
 
-void PrintVector(std::vector<char> vector) {
-  for (auto& digito : vector) std::cout << static_cast<char>(digito + '0');
-  std::cout << std::endl;
-}
-
 template <size_t Base>
 class BigInt {
  public:
@@ -148,13 +143,6 @@ class BigInt {
   // Potencia ab
   template <size_t Bass>
   friend BigInt<Bass> pow(const BigInt<Bass>&, const BigInt<Bass>&);
-  // PRINT BORRAAAAAAAAAARRRRR
-  void print() {
-    for (int i{0}; i < numero_.size(); ++i) {
-      std::cout << numero_[i];
-    }
-    std::cout << std::endl;
-  }
 
  private:
   int signo_;
