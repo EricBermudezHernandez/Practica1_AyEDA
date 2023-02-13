@@ -87,7 +87,6 @@ class BigInt {
     std::reverse(result.numero_.begin(), result.numero_.end());
     result.numero_.pop_back();
     std::reverse(result.numero_.begin(), result.numero_.end());
-
     return result;
   }
 
@@ -122,14 +121,37 @@ class BigInt {
   // ==========================================================
   template <size_t Bass>
   friend BigInt<Bass> operator/(const BigInt<Bass>& numero1, const BigInt<Bass>& numero2);
-  BigInt<Base> operator%(const BigInt<Base>&) const;
+  
+  BigInt<Base> operator%(const BigInt<Base>& numero2) const {
+    // Si se cumplen las siguientes dos condiciones, el divisor, que en este caso es "numero2", es 0. Una división por 0 no es posible, por lo que lo indicamos y salimos del programa
+  if (numero2.numero_.size() == 1 && numero2.numero_[0] == 0) {
+    std::cout << "No es posible realizar una división por 0" << std::endl;
+    exit(1);
+  }
+
+  // Verificar si el dividendo(numero1) es menor que el divisor(numero2), si esto es así, el cociente de la división dará 0, por lo que retornamos un BigInt con valor 0.
+  if (*this < numero2) {
+    return BigInt<Base>{};
+  }
+
+  // realizar la división
+  BigInt<Base> resta{*this}, resultado{}; // Contador que después de hacer restas consecutivas, será el resultado de la división
+  while(resta >= numero2) {
+    resta = resta - numero2;
+    resultado++;
+  }
+
+  // Quitamos el 0 sobrante
+  resta.numero_.pop_back();
+  return resta;
+  }
   // Potencia ab
   template <size_t Bass>
   friend BigInt<Bass> pow(const BigInt<Bass>&, const BigInt<Bass>&);
   // PRINT BORRAAAAAAAAAARRRRR
   void print() {
     for (int i{0}; i < numero_.size(); ++i) {
-      std::cout << i;
+      std::cout << numero_[i];
     }
     std::cout << std::endl;
   }
@@ -292,8 +314,7 @@ char BigInt<Base>::operator[](int posicion) const {
   return (static_cast<char>(numero_[(numero_.size() - 1) - posicion] + '0'));
 }
 
-// ========================= SOBRECARGA DE OPERADORES DE INSERCIÓN/EXTRACCIÓN
-// =========================
+// ========================= SOBRECARGA DE OPERADORES DE INSERCIÓN/EXTRACCIÓN =========================
 
 template <size_t Base>
 std::ostream& operator<<(std::ostream& os, const BigInt<Base>& numero) {
@@ -343,11 +364,11 @@ bool operator>(const BigInt<Base>& numero1, const BigInt<Base>& numero2) {
   std::vector<char> aux_vector_numero1{numero1.numero_}, aux_vector_numero2{numero2.numero_};
   long unsigned int i{aux_vector_numero1.size() - 1}, j{aux_vector_numero2.size() - 1}, size_maximo{};
   // Eliminamos los posibles 0s a la izquierda que puedan haber, para poder comparar por el tamaño de los vectores
-    while(static_cast<char>(aux_vector_numero1[i] + '0') == '0') {
+    while(static_cast<char>(aux_vector_numero1[i] + '0') == '0' && aux_vector_numero1.size() > 1) {
         aux_vector_numero1.pop_back();
         i--;
     }
-    while(static_cast<char>(aux_vector_numero2[j] + '0')  == '0') {
+    while(static_cast<char>(aux_vector_numero2[j] + '0')  == '0' && aux_vector_numero2.size() > 1) {
         aux_vector_numero1.pop_back();
         j--;
     }
@@ -367,14 +388,15 @@ bool operator<(const BigInt<Bass>& numero1, const BigInt<Bass>& numero2) {
   std::vector<char> aux_vector_numero1{numero1.numero_}, aux_vector_numero2{numero2.numero_};
   long unsigned int i{aux_vector_numero1.size() - 1}, j{aux_vector_numero2.size() - 1}, size_maximo{};
   // Eliminamos los posibles 0s a la izquierda que puedan haber, para poder comparar por el tamaño de los vectores
-    while(static_cast<char>(aux_vector_numero1[i] + '0') == '0') {
+    while(static_cast<char>(aux_vector_numero1[i] + '0') == '0' && aux_vector_numero1.size() > 1) {
         aux_vector_numero1.pop_back();
         i--;
     }
-    while(static_cast<char>(aux_vector_numero2[j] + '0')  == '0') {
+    while(static_cast<char>(aux_vector_numero2[j] + '0')  == '0' && aux_vector_numero2.size() > 1) {
         aux_vector_numero1.pop_back();
         j--;
     }
+
     if (aux_vector_numero1.size() < aux_vector_numero2.size()) {
         return true;
     } else if (aux_vector_numero2.size() < aux_vector_numero1.size()){
@@ -396,14 +418,15 @@ bool BigInt<Base>::operator>=(const BigInt<Base>& numero2) const {
   std::vector<char> aux_vector_numero1{numero_}, aux_vector_numero2{numero2.numero_};
   long unsigned i{aux_vector_numero1.size() - 1}, j{aux_vector_numero2.size() - 1}, size_maximo{};
   // Eliminamos los posibles 0s a la izquierda que puedan haber, para poder comparar por el tamaño de los vectores
-    while(static_cast<char>(aux_vector_numero1[i] + '0') == '0') {
+    while(static_cast<char>(aux_vector_numero1[i] + '0') == '0' && aux_vector_numero1.size() > 1) {
         aux_vector_numero1.pop_back();
         i--;
     }
-    while(static_cast<char>(aux_vector_numero2[j] + '0')  == '0') {
+    while(static_cast<char>(aux_vector_numero2[j] + '0')  == '0' && aux_vector_numero2.size() > 1) {
         aux_vector_numero1.pop_back();
         j--;
     }
+
     if (aux_vector_numero1.size() > aux_vector_numero2.size()) {
         return true;
     } else if (aux_vector_numero2.size() > aux_vector_numero1.size()){
@@ -420,11 +443,11 @@ bool BigInt<Base>::operator<=(const BigInt<Base>& numero2) const {
   std::vector<char> aux_vector_numero1{numero_}, aux_vector_numero2{numero2.numero_};
   long unsigned i{aux_vector_numero1.size() - 1}, j{aux_vector_numero2.size() - 1}, size_maximo{};
   // Eliminamos los posibles 0s a la izquierda que puedan haber, para poder comparar por el tamaño de los vectores
-    while(static_cast<char>(aux_vector_numero1[i] + '0') == '0') {
+    while(static_cast<char>(aux_vector_numero1[i] + '0') == '0' && aux_vector_numero1.size() > 1) {
         aux_vector_numero1.pop_back();
         i--;
     }
-    while(static_cast<char>(aux_vector_numero2[j] + '0')  == '0') {
+    while(static_cast<char>(aux_vector_numero2[j] + '0')  == '0' && aux_vector_numero2.size() > 1) {
         aux_vector_numero1.pop_back();
         j--;
     }
@@ -496,58 +519,27 @@ BigInt<Base> operator/(const BigInt<Base>& numero1, const BigInt<Base>& numero2)
   }
 
   // realizar la división
-  BigInt<Base> dividendo, divisor, resultado, cifra;
-  for (int i{0}; i < numero1.numero_.size(); ++i) {
-    BigInt<Base> aux{numero1.numero_[i]};
-    dividendo = (dividendo * BigInt<Base>{Base}) + aux;
-    cifra = BigInt<Base>{};
-    while (dividendo >= numero2) {
-      dividendo = dividendo - numero2;
-      cifra++;
-    }
-    resultado = (resultado * BigInt<Base>{Base}) + cifra;
-  }
-
-  while (resultado.numero_.size() > 1 && resultado.numero_.back() == 0) {
-    resultado.numero_.pop_back();
+  BigInt<Base> resta{numero1}, resultado{}; // Contador que después de hacer restas consecutivas, será el resultado de la división
+  while(resta >= numero2) {
+    resta = resta - numero2;
+    resultado++;
   }
 
   return resultado;
 }
 
-/*
-template <size_t Base>
-BigInt<Base> operator%(const BigInt<Base>& numero1) {
-  // Si se cumplen las siguientes dos condiciones, el divisor, que en este caso es "numero2", es 0. Una división por 0 no es posible, por lo que lo indicamos y salimos del programa
-  if (numero2.numero_.size() == 1 && numero2.numero_[0] == 0) {
-    std::cout << "No es posible realizar una división por 0" << std::endl;
-    exit(1);
-  }
-
-  // Verificar si el dividendo (numero1) es menor que el divisor (numero2), si esto es así, el módulo de la división será el mismo que el dividendo.
-  if (numero1 < numero2) {
-    return numero1;
-  }
-
-  // Realizar la operación de módulo
-  BigInt<Base> num1{numero1}, num2{numero2}, dividendo, divisor, resultado, cifra;
-  for (int i{0}; i < num1.numero_.size(); ++i) {
-    BigInt<Base> aux{num1.numero_[i]};
-    dividendo = (dividendo * BigInt<Base>{Base}) + aux;
-    cifra = BigInt<Base>{"0"};
-    while (dividendo >= num2) {
-      dividendo = dividendo - num2;
-      cifra++;
-    }
-  }
-  return dividendo;
-}
-*/
 // Potencia
 template <size_t Base>
-BigInt<Base> pow(const BigInt<Base>&, const BigInt<Base>&) {}
+BigInt<Base> pow(const BigInt<Base>& base, const BigInt<Base>& exponente) {
+  BigInt<Base> resultado{1}, contador{};
+  while (contador < exponente) {
+    resultado = resultado * base; // vamos haciendo la potencia multiplicando el número por si mismo iterativamente
+    contador++;
+  }
+  return resultado;
+}
 
-// ========================= OPERADORES DE INCREMENTO / DECREMENTO
+// ========================= OPERADORES DE INCREMENTO / DECREMENTO =========================
 
 template <size_t Base>
 BigInt<Base>& BigInt<Base>::operator++() {  // Pre-incremento
