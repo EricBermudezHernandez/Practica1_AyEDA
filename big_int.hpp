@@ -86,7 +86,18 @@ class BigInt {
   }
 
   // ==========================================================
-  BigInt<Base> operator-() const;
+  // Operador de cambiar de signo 
+  BigInt<Base> operator-() const {
+    BigInt<Base> aux{*this};
+    if (aux.sign() == 1) { // Si numero_.sign() = 1, es que es positivo, por lo que le añadimos el signo -(45)
+      aux.signo_ = -1;
+      aux.numero_.emplace_back('-' - '0');
+    } else if (aux.sign() == -1) { // Si numero_.sign() = -1, es que es negativo, por lo que le quitamos el signo - para hacerlo positivo
+      aux.signo_ = 1;
+      aux.numero_.pop_back();
+    }
+    return aux;
+  }
   // ==========================================================
   BigInt<Base> operator*(const BigInt<Base>& numero2) const {
     BigInt<Base> aux{*this},result{"0"};
@@ -150,6 +161,7 @@ class BigInt {
 };
 
 // ========================= CONSTRUCTORES =========================
+
 template <size_t Base>
 BigInt<Base>::BigInt(long long n) {
   long long resto{0};
@@ -284,6 +296,12 @@ BigInt<Base>::BigInt(const char* numero) {
 
 template <size_t Base>
 BigInt<Base>::BigInt(const BigInt<Base>& segundo_numero) {
+  BigInt<Base> aux{};
+  if (segundo_numero >= aux) {
+    signo_ = 1;
+  } else {
+    signo_ = -1;
+  }
   numero_ = segundo_numero.numero_;
 }
 
@@ -360,9 +378,9 @@ bool operator>(const BigInt<Base>& numero1, const BigInt<Base>& numero2) {
         aux_vector_numero1.pop_back();
         j--;
     }
-    if (aux_vector_numero1.size() > aux_vector_numero2.size()) {
+    if (aux_vector_numero1.size() > aux_vector_numero2.size() && (numero1.sign() == 1 && numero2.sign() == -1)) {
         return true;
-    } else if (aux_vector_numero2.size() > aux_vector_numero1.size()){
+    } else if (aux_vector_numero2.size() > aux_vector_numero1.size() && (numero1.sign() == -1 && numero2.sign() == 1)){
         return false;
     }
     // Si hemos llegado a este punto, es que tienen el mismo tamaño, tenemos invertir los vectores por que están alrevés por el propio constructor de BigInt para después compararlos
@@ -385,9 +403,9 @@ bool operator<(const BigInt<Bass>& numero1, const BigInt<Bass>& numero2) {
         j--;
     }
 
-    if (aux_vector_numero1.size() < aux_vector_numero2.size()) {
+    if (aux_vector_numero1.size() < aux_vector_numero2.size() && (numero1.sign() == -1 && numero2.sign() == 1)) {
         return true;
-    } else if (aux_vector_numero2.size() < aux_vector_numero1.size()){
+    } else if (aux_vector_numero2.size() < aux_vector_numero1.size() && (numero1.sign() == 1 && numero2.sign() == -1)){
         return false;
     }
     // Si hemos llegado a este punto, es que tienen el mismo tamaño, tenemos invertir los vectores por que están alrevés por el propio constructor de BigInt para después compararlos
@@ -415,9 +433,9 @@ bool BigInt<Base>::operator>=(const BigInt<Base>& numero2) const {
         j--;
     }
 
-    if (aux_vector_numero1.size() > aux_vector_numero2.size()) {
+    if (aux_vector_numero1.size() > aux_vector_numero2.size() && (signo_ == 1 && numero2.sign() == -1)) {
         return true;
-    } else if (aux_vector_numero2.size() > aux_vector_numero1.size()){
+    } else if (aux_vector_numero2.size() > aux_vector_numero1.size() && (signo_ == -1 && numero2.sign() == 1)){
         return false;
     }
     // Si hemos llegado a este punto, es que tienen el mismo tamaño, tenemos invertir los vectores por que están alrevés por el propio constructor de BigInt para después compararlos
@@ -439,9 +457,9 @@ bool BigInt<Base>::operator<=(const BigInt<Base>& numero2) const {
         aux_vector_numero1.pop_back();
         j--;
     }
-    if (aux_vector_numero1.size() < aux_vector_numero2.size()) {
+    if (aux_vector_numero1.size() < aux_vector_numero2.size() && (signo_ == -1 && numero2.sign() == 1)) {
         return true;
-    } else if (aux_vector_numero2.size() < aux_vector_numero1.size()){
+    } else if (aux_vector_numero2.size() < aux_vector_numero1.size() && (signo_ == 1 && numero2.sign() == -1)) {
         return false;
     }
     // Si hemos llegado a este punto, es que tienen el mismo tamaño, tenemos invertir los vectores por que están alrevés por el propio constructor de BigInt para después compararlos
