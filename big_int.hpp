@@ -504,7 +504,6 @@ BigInt<Base> operator+(const BigInt<Base>& numero1,
   return result;
 }
 
-// MAL
 template <size_t Base> 
 BigInt<Base> operator/(const BigInt<Base>& numero1, const BigInt<Base>& numero2) {
   // Si se cumplen las siguientes dos condiciones, el divisor, que en este caso es "numero2", es 0. Una división por 0 no es posible, por lo que lo indicamos y salimos del programa
