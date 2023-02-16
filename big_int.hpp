@@ -3,7 +3,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <fstream>
 #include <iostream>
+#include <map>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -76,9 +79,9 @@ class BigInt {
       result.numero_.push_back(difference);
     }
 
-    // Al final de cada operación se añade un 0 adicional al resultado de la multiplicación,
-    // por lo que se elimina antes de devolver el resultado invirtiendo el número,
-    // quitando el 0 y volviendo a invertir el número
+    // Al final de cada operación se añade un 0 adicional al resultado de la
+    // multiplicación, por lo que se elimina antes de devolver el resultado
+    // invirtiendo el número, quitando el 0 y volviendo a invertir el número
     std::reverse(result.numero_.begin(), result.numero_.end());
     result.numero_.pop_back();
     std::reverse(result.numero_.begin(), result.numero_.end());
@@ -86,13 +89,16 @@ class BigInt {
   }
 
   // ==========================================================
-  // Operador de cambiar de signo 
+  // Operador de cambiar de signo
   BigInt<Base> operator-() const {
     BigInt<Base> aux{*this};
-    if (aux.sign() == 1) { // Si numero_.sign() = 1, es que es positivo, por lo que le añadimos el signo -(45)
+    if (aux.sign() == 1) {  // Si numero_.sign() = 1, es que es positivo, por lo
+                            // que le añadimos el signo -(45)
       aux.signo_ = -1;
       aux.numero_.emplace_back('-' - '0');
-    } else if (aux.sign() == -1) { // Si numero_.sign() = -1, es que es negativo, por lo que le quitamos el signo - para hacerlo positivo
+    } else if (aux.sign() ==
+               -1) {  // Si numero_.sign() = -1, es que es negativo, por lo que
+                      // le quitamos el signo - para hacerlo positivo
       aux.signo_ = 1;
       aux.numero_.pop_back();
     }
@@ -100,14 +106,14 @@ class BigInt {
   }
   // ==========================================================
   BigInt<Base> operator*(const BigInt<Base>& numero2) const {
-    BigInt<Base> aux{*this},result{"0"};
+    BigInt<Base> aux{*this}, result{"0"};
     for (int i = 0; i < aux.numero_.size(); i++) {
       int carry = 0;
       BigInt<Base> aux_result;
       for (int j = 0; j < numero2.numero_.size() || carry > 0; j++) {
-        int mul =
-            aux.numero_[i] * (j < numero2.numero_.size() ? numero2.numero_[j] : 0) +
-            carry;
+        int mul = aux.numero_[i] *
+                      (j < numero2.numero_.size() ? numero2.numero_[j] : 0) +
+                  carry;
         aux_result.numero_.push_back(mul % Base);
         carry = mul / Base;
       }
@@ -116,9 +122,9 @@ class BigInt {
       }
       result = result + aux_result;
     }
-    // Al final de cada operación se añade un 0 adicional al resultado de la multiplicación,
-    // por lo que se elimina antes de devolver el resultado invirtiendo el número,
-    // quitando el 0 y volviendo a invertir el número
+    // Al final de cada operación se añade un 0 adicional al resultado de la
+    // multiplicación, por lo que se elimina antes de devolver el resultado
+    // invirtiendo el número, quitando el 0 y volviendo a invertir el número
     std::reverse(result.numero_.begin(), result.numero_.end());
     result.numero_.pop_back();
     std::reverse(result.numero_.begin(), result.numero_.end());
@@ -126,30 +132,37 @@ class BigInt {
   }
   // ==========================================================
   template <size_t Bass>
-  friend BigInt<Bass> operator/(const BigInt<Bass>& numero1, const BigInt<Bass>& numero2);
-  
+  friend BigInt<Bass> operator/(const BigInt<Bass>& numero1,
+                                const BigInt<Bass>& numero2);
+
   BigInt<Base> operator%(const BigInt<Base>& numero2) const {
-    // Si se cumplen las siguientes dos condiciones, el divisor, que en este caso es "numero2", es 0. Una división por 0 no es posible, por lo que lo indicamos y salimos del programa
-  if (numero2.numero_.size() == 1 && numero2.numero_[0] == 0) {
-    std::cout << "No es posible realizar una división por 0" << std::endl;
-    exit(1);
-  }
+    // Si se cumplen las siguientes dos condiciones, el divisor, que en este
+    // caso es "numero2", es 0. Una división por 0 no es posible, por lo que lo
+    // indicamos y salimos del programa
+    if (numero2.numero_.size() == 1 && numero2.numero_[0] == 0) {
+      std::cout << "No es posible realizar una división por 0" << std::endl;
+      exit(1);
+    }
 
-  // Verificar si el dividendo(numero1) es menor que el divisor(numero2), si esto es así, el cociente de la división dará 0, por lo que retornamos un BigInt con valor 0.
-  if (*this < numero2) {
-    return BigInt<Base>{};
-  }
+    // Verificar si el dividendo(numero1) es menor que el divisor(numero2), si
+    // esto es así, el cociente de la división dará 0, por lo que retornamos un
+    // BigInt con valor 0.
+    if (*this < numero2) {
+      return BigInt<Base>{};
+    }
 
-  // realizar la división
-  BigInt<Base> resta{*this}, resultado{}; // Contador que después de hacer restas consecutivas, será el resultado de la división
-  while(resta >= numero2) {
-    resta = resta - numero2;
-    resultado++;
-  }
+    // realizar la división
+    BigInt<Base> resta{*this},
+        resultado{};  // Contador que después de hacer restas consecutivas, será
+                      // el resultado de la división
+    while (resta >= numero2) {
+      resta = resta - numero2;
+      resultado++;
+    }
 
-  // Quitamos el 0 sobrante
-  resta.numero_.pop_back();
-  return resta;
+    // Quitamos el 0 sobrante
+    resta.numero_.pop_back();
+    return resta;
   }
   // Potencia ab
   template <size_t Bass>
@@ -227,7 +240,6 @@ BigInt<Base>::BigInt(std::string& numero_string) {
                 // usuario nos habrá metido una incorrecta por lo que indicamos
                 // el error
         std::cerr << "Letra incorrecta" << std::endl;
-        exit(1);
       }
     } else {  // Si no es ninguna letra, es que es un número, por lo que lo
               // metemos directamente
@@ -312,21 +324,25 @@ char BigInt<Base>::operator[](int posicion) const {
   // Usamos la "fórmula" [(numero_.size() - 1) - posicion] para acceder a el
   // número que queremos, esto lo hacemos así ya que el vector de chars del
   // BigInt está dado la vuelta
-  if (numero_[(numero_.size() - 1) - posicion] >= 10) {  // Si el número es mayor o igual que 10 es que es una letra en
-                                                        // hexadecimal así que la convertimos a un número
-    return ( static_cast<char>('A' + numero_[(numero_.size() - 1) - posicion] - 10));
+  if (numero_[(numero_.size() - 1) - posicion] >=
+      10) {  // Si el número es mayor o igual que 10 es que es una letra en
+             // hexadecimal así que la convertimos a un número
+    return (
+        static_cast<char>('A' + numero_[(numero_.size() - 1) - posicion] - 10));
   }  // Si es menor que 10 es que es un número, por lo que lo convertimos a un
      // char o lo sacamos por pantalla
   return (static_cast<char>(numero_[(numero_.size() - 1) - posicion] + '0'));
 }
 
-// ========================= SOBRECARGA DE OPERADORES DE INSERCIÓN/EXTRACCIÓN =========================
+// ========================= SOBRECARGA DE OPERADORES DE INSERCIÓN/EXTRACCIÓN
+// =========================
 
 template <size_t Base>
 std::ostream& operator<<(std::ostream& os, const BigInt<Base>& numero) {
   for (int i{numero.numero_.size() - 1}; i >= 0; --i) {
-    if (numero.numero_[i] >= 10) {  // Si el número es mayor o igual que 10 es que es una letra en
-                                    // hexadecimal así que la convertimos a un número
+    if (numero.numero_[i] >=
+        10) {  // Si el número es mayor o igual que 10 es que es una letra en
+               // hexadecimal así que la convertimos a un número
       os << (static_cast<char>('A' + numero.numero_[i] - 10));
     } else {  // Si es menor que 10 es que es un número, por lo que lo
               // convertimos a un char o lo sacamos por pantalla
@@ -350,7 +366,8 @@ std::istream& operator>>(std::istream& is, BigInt<Base>& big_int) {
   return is;
 }
 
-// ========================= SOBRECARGA DE OPERADOR '=' =========================
+// ========================= SOBRECARGA DE OPERADOR '='
+// =========================
 
 template <size_t Base>
 BigInt<Base>& BigInt<Base>::operator=(const BigInt<Base>& segundo_numero) {
@@ -358,7 +375,8 @@ BigInt<Base>& BigInt<Base>::operator=(const BigInt<Base>& segundo_numero) {
   return *this;
 }
 
-// ========================= SOBRECARGA DE OPERADORES DE COMPARACIÓN =========================
+// ========================= SOBRECARGA DE OPERADORES DE COMPARACIÓN
+// =========================
 
 template <size_t Base>
 bool operator==(const BigInt<Base>& numero1, const BigInt<Base>& numero2) {
@@ -367,51 +385,69 @@ bool operator==(const BigInt<Base>& numero1, const BigInt<Base>& numero2) {
 
 template <size_t Base>
 bool operator>(const BigInt<Base>& numero1, const BigInt<Base>& numero2) {
-  std::vector<char> aux_vector_numero1{numero1.numero_}, aux_vector_numero2{numero2.numero_};
-  long unsigned int i{aux_vector_numero1.size() - 1}, j{aux_vector_numero2.size() - 1}, size_maximo{};
-  // Eliminamos los posibles 0s a la izquierda que puedan haber, para poder comparar por el tamaño de los vectores
-    while(static_cast<char>(aux_vector_numero1[i] + '0') == '0' && aux_vector_numero1.size() > 1) {
-        aux_vector_numero1.pop_back();
-        i--;
-    }
-    while(static_cast<char>(aux_vector_numero2[j] + '0')  == '0' && aux_vector_numero2.size() > 1) {
-        aux_vector_numero1.pop_back();
-        j--;
-    }
-    if (aux_vector_numero1.size() > aux_vector_numero2.size() && (numero1.sign() == 1 && numero2.sign() == -1)) {
-        return true;
-    } else if (aux_vector_numero2.size() > aux_vector_numero1.size() && (numero1.sign() == -1 && numero2.sign() == 1)){
-        return false;
-    }
-    // Si hemos llegado a este punto, es que tienen el mismo tamaño, tenemos invertir los vectores por que están alrevés por el propio constructor de BigInt para después compararlos
-    std::reverse(aux_vector_numero1.begin(), aux_vector_numero1.end());
-    std::reverse(aux_vector_numero2.begin(), aux_vector_numero2.end());
-    return aux_vector_numero1 > aux_vector_numero2;
+  std::vector<char> aux_vector_numero1{numero1.numero_},
+      aux_vector_numero2{numero2.numero_};
+  long unsigned int i{aux_vector_numero1.size() - 1},
+      j{aux_vector_numero2.size() - 1}, size_maximo{};
+  // Eliminamos los posibles 0s a la izquierda que puedan haber, para poder
+  // comparar por el tamaño de los vectores
+  while (static_cast<char>(aux_vector_numero1[i] + '0') == '0' &&
+         aux_vector_numero1.size() > 1) {
+    aux_vector_numero1.pop_back();
+    i--;
+  }
+  while (static_cast<char>(aux_vector_numero2[j] + '0') == '0' &&
+         aux_vector_numero2.size() > 1) {
+    aux_vector_numero1.pop_back();
+    j--;
+  }
+  if (aux_vector_numero1.size() > aux_vector_numero2.size() &&
+      (numero1.sign() == 1 && numero2.sign() == -1)) {
+    return true;
+  } else if (aux_vector_numero2.size() > aux_vector_numero1.size() &&
+             (numero1.sign() == -1 && numero2.sign() == 1)) {
+    return false;
+  }
+  // Si hemos llegado a este punto, es que tienen el mismo tamaño, tenemos
+  // invertir los vectores por que están alrevés por el propio constructor de
+  // BigInt para después compararlos
+  std::reverse(aux_vector_numero1.begin(), aux_vector_numero1.end());
+  std::reverse(aux_vector_numero2.begin(), aux_vector_numero2.end());
+  return aux_vector_numero1 > aux_vector_numero2;
 }
 
 template <size_t Bass>
 bool operator<(const BigInt<Bass>& numero1, const BigInt<Bass>& numero2) {
-  std::vector<char> aux_vector_numero1{numero1.numero_}, aux_vector_numero2{numero2.numero_};
-  long unsigned int i{aux_vector_numero1.size() - 1}, j{aux_vector_numero2.size() - 1}, size_maximo{};
-  // Eliminamos los posibles 0s a la izquierda que puedan haber, para poder comparar por el tamaño de los vectores
-    while(static_cast<char>(aux_vector_numero1[i] + '0') == '0' && aux_vector_numero1.size() > 1) {
-        aux_vector_numero1.pop_back();
-        i--;
-    }
-    while(static_cast<char>(aux_vector_numero2[j] + '0')  == '0' && aux_vector_numero2.size() > 1) {
-        aux_vector_numero1.pop_back();
-        j--;
-    }
+  std::vector<char> aux_vector_numero1{numero1.numero_},
+      aux_vector_numero2{numero2.numero_};
+  long unsigned int i{aux_vector_numero1.size() - 1},
+      j{aux_vector_numero2.size() - 1}, size_maximo{};
+  // Eliminamos los posibles 0s a la izquierda que puedan haber, para poder
+  // comparar por el tamaño de los vectores
+  while (static_cast<char>(aux_vector_numero1[i] + '0') == '0' &&
+         aux_vector_numero1.size() > 1) {
+    aux_vector_numero1.pop_back();
+    i--;
+  }
+  while (static_cast<char>(aux_vector_numero2[j] + '0') == '0' &&
+         aux_vector_numero2.size() > 1) {
+    aux_vector_numero1.pop_back();
+    j--;
+  }
 
-    if (aux_vector_numero1.size() < aux_vector_numero2.size() && (numero1.sign() == -1 && numero2.sign() == 1)) {
-        return true;
-    } else if (aux_vector_numero2.size() < aux_vector_numero1.size() && (numero1.sign() == 1 && numero2.sign() == -1)){
-        return false;
-    }
-    // Si hemos llegado a este punto, es que tienen el mismo tamaño, tenemos invertir los vectores por que están alrevés por el propio constructor de BigInt para después compararlos
-    std::reverse(aux_vector_numero1.begin(), aux_vector_numero1.end());
-    std::reverse(aux_vector_numero2.begin(), aux_vector_numero2.end());
-    return aux_vector_numero1 < aux_vector_numero2;
+  if (aux_vector_numero1.size() < aux_vector_numero2.size() &&
+      (numero1.sign() == -1 && numero2.sign() == 1)) {
+    return true;
+  } else if (aux_vector_numero2.size() < aux_vector_numero1.size() &&
+             (numero1.sign() == 1 && numero2.sign() == -1)) {
+    return false;
+  }
+  // Si hemos llegado a este punto, es que tienen el mismo tamaño, tenemos
+  // invertir los vectores por que están alrevés por el propio constructor de
+  // BigInt para después compararlos
+  std::reverse(aux_vector_numero1.begin(), aux_vector_numero1.end());
+  std::reverse(aux_vector_numero2.begin(), aux_vector_numero2.end());
+  return aux_vector_numero1 < aux_vector_numero2;
 }
 
 template <size_t Base>
@@ -421,51 +457,69 @@ bool BigInt<Base>::operator!=(const BigInt<Base>& numero2) const {
 
 template <size_t Base>
 bool BigInt<Base>::operator>=(const BigInt<Base>& numero2) const {
-  std::vector<char> aux_vector_numero1{numero_}, aux_vector_numero2{numero2.numero_};
-  long unsigned i{aux_vector_numero1.size() - 1}, j{aux_vector_numero2.size() - 1}, size_maximo{};
-  // Eliminamos los posibles 0s a la izquierda que puedan haber, para poder comparar por el tamaño de los vectores
-    while(static_cast<char>(aux_vector_numero1[i] + '0') == '0' && aux_vector_numero1.size() > 1) {
-        aux_vector_numero1.pop_back();
-        i--;
-    }
-    while(static_cast<char>(aux_vector_numero2[j] + '0')  == '0' && aux_vector_numero2.size() > 1) {
-        aux_vector_numero1.pop_back();
-        j--;
-    }
+  std::vector<char> aux_vector_numero1{numero_},
+      aux_vector_numero2{numero2.numero_};
+  long unsigned i{aux_vector_numero1.size() - 1},
+      j{aux_vector_numero2.size() - 1}, size_maximo{};
+  // Eliminamos los posibles 0s a la izquierda que puedan haber, para poder
+  // comparar por el tamaño de los vectores
+  while (static_cast<char>(aux_vector_numero1[i] + '0') == '0' &&
+         aux_vector_numero1.size() > 1) {
+    aux_vector_numero1.pop_back();
+    i--;
+  }
+  while (static_cast<char>(aux_vector_numero2[j] + '0') == '0' &&
+         aux_vector_numero2.size() > 1) {
+    aux_vector_numero1.pop_back();
+    j--;
+  }
 
-    if (aux_vector_numero1.size() > aux_vector_numero2.size() && (signo_ == 1 && numero2.sign() == -1)) {
-        return true;
-    } else if (aux_vector_numero2.size() > aux_vector_numero1.size() && (signo_ == -1 && numero2.sign() == 1)){
-        return false;
-    }
-    // Si hemos llegado a este punto, es que tienen el mismo tamaño, tenemos invertir los vectores por que están alrevés por el propio constructor de BigInt para después compararlos
-    std::reverse(aux_vector_numero1.begin(), aux_vector_numero1.end());
-    std::reverse(aux_vector_numero2.begin(), aux_vector_numero2.end());
-    return aux_vector_numero1 >= aux_vector_numero2;
+  if (aux_vector_numero1.size() > aux_vector_numero2.size() &&
+      (signo_ == 1 && numero2.sign() == -1)) {
+    return true;
+  } else if (aux_vector_numero2.size() > aux_vector_numero1.size() &&
+             (signo_ == -1 && numero2.sign() == 1)) {
+    return false;
+  }
+  // Si hemos llegado a este punto, es que tienen el mismo tamaño, tenemos
+  // invertir los vectores por que están alrevés por el propio constructor de
+  // BigInt para después compararlos
+  std::reverse(aux_vector_numero1.begin(), aux_vector_numero1.end());
+  std::reverse(aux_vector_numero2.begin(), aux_vector_numero2.end());
+  return aux_vector_numero1 >= aux_vector_numero2;
 }
 
 template <size_t Base>
 bool BigInt<Base>::operator<=(const BigInt<Base>& numero2) const {
-  std::vector<char> aux_vector_numero1{numero_}, aux_vector_numero2{numero2.numero_};
-  long unsigned i{aux_vector_numero1.size() - 1}, j{aux_vector_numero2.size() - 1}, size_maximo{};
-  // Eliminamos los posibles 0s a la izquierda que puedan haber, para poder comparar por el tamaño de los vectores
-    while(static_cast<char>(aux_vector_numero1[i] + '0') == '0' && aux_vector_numero1.size() > 1) {
-        aux_vector_numero1.pop_back();
-        i--;
-    }
-    while(static_cast<char>(aux_vector_numero2[j] + '0')  == '0' && aux_vector_numero2.size() > 1) {
-        aux_vector_numero1.pop_back();
-        j--;
-    }
-    if (aux_vector_numero1.size() < aux_vector_numero2.size() && (signo_ == -1 && numero2.sign() == 1)) {
-        return true;
-    } else if (aux_vector_numero2.size() < aux_vector_numero1.size() && (signo_ == 1 && numero2.sign() == -1)) {
-        return false;
-    }
-    // Si hemos llegado a este punto, es que tienen el mismo tamaño, tenemos invertir los vectores por que están alrevés por el propio constructor de BigInt para después compararlos
-    std::reverse(aux_vector_numero1.begin(), aux_vector_numero1.end());
-    std::reverse(aux_vector_numero2.begin(), aux_vector_numero2.end());
-    return aux_vector_numero1 <= aux_vector_numero2;
+  std::vector<char> aux_vector_numero1{numero_},
+      aux_vector_numero2{numero2.numero_};
+  long unsigned i{aux_vector_numero1.size() - 1},
+      j{aux_vector_numero2.size() - 1}, size_maximo{};
+  // Eliminamos los posibles 0s a la izquierda que puedan haber, para poder
+  // comparar por el tamaño de los vectores
+  while (static_cast<char>(aux_vector_numero1[i] + '0') == '0' &&
+         aux_vector_numero1.size() > 1) {
+    aux_vector_numero1.pop_back();
+    i--;
+  }
+  while (static_cast<char>(aux_vector_numero2[j] + '0') == '0' &&
+         aux_vector_numero2.size() > 1) {
+    aux_vector_numero1.pop_back();
+    j--;
+  }
+  if (aux_vector_numero1.size() < aux_vector_numero2.size() &&
+      (signo_ == -1 && numero2.sign() == 1)) {
+    return true;
+  } else if (aux_vector_numero2.size() < aux_vector_numero1.size() &&
+             (signo_ == 1 && numero2.sign() == -1)) {
+    return false;
+  }
+  // Si hemos llegado a este punto, es que tienen el mismo tamaño, tenemos
+  // invertir los vectores por que están alrevés por el propio constructor de
+  // BigInt para después compararlos
+  std::reverse(aux_vector_numero1.begin(), aux_vector_numero1.end());
+  std::reverse(aux_vector_numero2.begin(), aux_vector_numero2.end());
+  return aux_vector_numero1 <= aux_vector_numero2;
 }
 
 // ========================= OPERADORES ARITMÉTICOS =========================
@@ -510,22 +564,29 @@ BigInt<Base> operator+(const BigInt<Base>& numero1,
   return result;
 }
 
-template <size_t Base> 
-BigInt<Base> operator/(const BigInt<Base>& numero1, const BigInt<Base>& numero2) {
-  // Si se cumplen las siguientes dos condiciones, el divisor, que en este caso es "numero2", es 0. Una división por 0 no es posible, por lo que lo indicamos y salimos del programa
+template <size_t Base>
+BigInt<Base> operator/(const BigInt<Base>& numero1,
+                       const BigInt<Base>& numero2) {
+  // Si se cumplen las siguientes dos condiciones, el divisor, que en este caso
+  // es "numero2", es 0. Una división por 0 no es posible, por lo que lo
+  // indicamos y salimos del programa
   if (numero2.numero_.size() == 1 && numero2.numero_[0] == 0) {
     std::cout << "No es posible realizar una división por 0" << std::endl;
     exit(1);
   }
 
-  // Verificar si el dividendo(numero1) es menor que el divisor(numero2), si esto es así, el cociente de la división dará 0, por lo que retornamos un BigInt con valor 0.
+  // Verificar si el dividendo(numero1) es menor que el divisor(numero2), si
+  // esto es así, el cociente de la división dará 0, por lo que retornamos un
+  // BigInt con valor 0.
   if (numero1 < numero2) {
     return BigInt<Base>{};
   }
 
   // realizar la división
-  BigInt<Base> resta{numero1}, resultado{}; // Contador que después de hacer restas consecutivas, será el resultado de la división
-  while(resta >= numero2) {
+  BigInt<Base> resta{numero1},
+      resultado{};  // Contador que después de hacer restas consecutivas, será
+                    // el resultado de la división
+  while (resta >= numero2) {
     resta = resta - numero2;
     resultado++;
   }
@@ -538,13 +599,15 @@ template <size_t Base>
 BigInt<Base> pow(const BigInt<Base>& base, const BigInt<Base>& exponente) {
   BigInt<Base> resultado{1}, contador{};
   while (contador < exponente) {
-    resultado = resultado * base; // vamos haciendo la potencia multiplicando el número por si mismo iterativamente
+    resultado = resultado * base;  // vamos haciendo la potencia multiplicando
+                                   // el número por si mismo iterativamente
     contador++;
   }
   return resultado;
 }
 
-// ========================= OPERADORES DE INCREMENTO / DECREMENTO =========================
+// ========================= OPERADORES DE INCREMENTO / DECREMENTO
+// =========================
 
 template <size_t Base>
 BigInt<Base>& BigInt<Base>::operator++() {  // Pre-incremento
@@ -568,17 +631,19 @@ BigInt<Base> BigInt<Base>::operator++(int) {  // Post-incremento
 
 template <size_t Base>
 BigInt<Base>& BigInt<Base>::operator--() {  // Pre-decremento
-  // Como no se puede restar un BigInt con una constante, Inicializamos un BigInt con valor 1 para poder restar aprovechando la sobrecarga del operador
+  // Como no se puede restar un BigInt con una constante, Inicializamos un
+  // BigInt con valor 1 para poder restar aprovechando la sobrecarga del
+  // operador
   BigInt<Base> restando{1};
   *this = *this - restando;
   return *this;
-}  
+}
 
 template <size_t Base>
 BigInt<Base> BigInt<Base>::operator--(int) {  // Post-decremento
-  BigInt<Base> aux{*this},restando{1};
+  BigInt<Base> aux{*this}, restando{1};
   *this = *this - restando;
   return aux;
-}  
+}
 
 #endif
